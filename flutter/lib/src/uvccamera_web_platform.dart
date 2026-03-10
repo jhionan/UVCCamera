@@ -405,9 +405,8 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
                 state.imgElement?.onload = null;
                 state.imgElement?.onerror = null;
                 state.imgElement?.src = '';
-                web.window.fetch(
-                    'http://localhost:$helperPort/stop'.toJS,
-                    web.RequestInit(method: 'POST'),
+                web.window.navigator.sendBeacon(
+                    'http://localhost:$helperPort/stop',
                 );
             } else {
                 // Tab visible — restart if camera state still exists
@@ -517,15 +516,16 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
             state.keyupListener = null;
         }
 
-        // Helper mode: tell the helper to stop streaming (turns LED off)
+        // Helper mode: tell the helper to stop streaming (turns LED off).
+        // Uses sendBeacon instead of fetch — sendBeacon is fire-and-forget and
+        // guaranteed to be delivered even during page teardown / navigation,
+        // which matters because dispose() is often called without await.
         if (state.useHelper && state.helperPort != null) {
-            try {
-                await web.window.fetch(
-                    'http://localhost:${state.helperPort}/stop'.toJS,
-                    web.RequestInit(method: 'POST'),
-                ).toDart;
-            } catch (e) {
-                debugPrint('UvcCameraWebPlatform: failed to stop helper: $e');
+            final sent = web.window.navigator.sendBeacon(
+                'http://localhost:${state.helperPort}/stop',
+            );
+            if (!sent) {
+                debugPrint('UvcCameraWebPlatform: sendBeacon /stop failed');
             }
         }
 
