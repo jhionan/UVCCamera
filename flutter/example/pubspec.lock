@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  copy_with_extension:
+    dependency: transitive
+    description:
+      name: copy_with_extension
+      sha256: "23d5c7ad882b77c65c5f596f2b941e5eabaa704fb51a3a9f1cd76c768c4c7f36"
+      url: "https://pub.dev"
+    source: hosted
+    version: "12.1.0"
   cross_file:
     dependency: "direct main"
     description:
@@ -330,7 +338,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.0-SNAPSHOT"
+    version: "0.2.0"
   vector_math:
     dependency: transitive
     description:

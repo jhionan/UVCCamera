@@ -209,6 +209,11 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
         setState(() {
           _log = 'btn(${event.button}): ${event.state}\n$_log';
         });
+
+        // Trigger takePicture on shutter button press (button 0, state 1)
+        if (event.button == 0 && event.state == 1) {
+          _takePicture();
+        }
       });
     });
   }
