@@ -523,11 +523,11 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
 
         // Remove keyboard fallback listeners
         if (state.keydownListener != null) {
-            web.document.removeEventListener('keydown', state.keydownListener!);
+            web.document.removeEventListener('keydown', state.keydownListener!, true.toJS);
             state.keydownListener = null;
         }
         if (state.keyupListener != null) {
-            web.document.removeEventListener('keyup', state.keyupListener!);
+            web.document.removeEventListener('keyup', state.keyupListener!, true.toJS);
             state.keyupListener = null;
         }
 
@@ -763,6 +763,8 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
     }
 
     /// Keyboard fallback: Space key triggers shutter button events.
+    /// Listens on the capture phase and stops propagation so Flutter's
+    /// own keyboard handling doesn't also activate focused widgets.
     void _attachKeyboardFallback(
         int cameraId,
         _WebCameraState? state,
@@ -773,6 +775,7 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
         final keydownListener = ((web.KeyboardEvent e) {
             if (e.code == 'Space' && !e.repeat) {
                 e.preventDefault();
+                e.stopImmediatePropagation();
                 controller.add(UvcCameraButtonEvent(
                     cameraId: cameraId,
                     button: 0,
@@ -784,6 +787,7 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
         final keyupListener = ((web.KeyboardEvent e) {
             if (e.code == 'Space') {
                 e.preventDefault();
+                e.stopImmediatePropagation();
                 controller.add(UvcCameraButtonEvent(
                     cameraId: cameraId,
                     button: 0,
@@ -795,8 +799,9 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
         state.keydownListener = keydownListener;
         state.keyupListener = keyupListener;
 
-        web.document.addEventListener('keydown', keydownListener);
-        web.document.addEventListener('keyup', keyupListener);
+        // Use capture phase (true) to intercept before Flutter's event handling
+        web.document.addEventListener('keydown', keydownListener, true.toJS);
+        web.document.addEventListener('keyup', keyupListener, true.toJS);
     }
 
     /// Connects to the native uvc_button_helper WebSocket server on localhost.
@@ -877,11 +882,11 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
 
         // Remove keyboard fallback listeners
         if (state.keydownListener != null) {
-            web.document.removeEventListener('keydown', state.keydownListener!);
+            web.document.removeEventListener('keydown', state.keydownListener!, true.toJS);
             state.keydownListener = null;
         }
         if (state.keyupListener != null) {
-            web.document.removeEventListener('keyup', state.keyupListener!);
+            web.document.removeEventListener('keyup', state.keyupListener!, true.toJS);
             state.keyupListener = null;
         }
 
