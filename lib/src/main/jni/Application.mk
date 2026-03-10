@@ -30,3 +30,5 @@ APP_PLATFORM := android-21
 APP_ABI := armeabi-v7a arm64-v8a
 #APP_OPTIM := debug
 APP_OPTIM := release
+# Align ELF segments to 16 KB boundaries for Android 15+ 16 KB page size support
+APP_LDFLAGS := -Wl,-z,max-page-size=16384
