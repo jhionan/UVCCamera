@@ -523,11 +523,11 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
 
         // Remove keyboard fallback listeners
         if (state.keydownListener != null) {
-            web.document.removeEventListener('keydown', state.keydownListener!, true.toJS);
+            web.document.removeEventListener('keydown', state.keydownListener!, web.EventListenerOptions(capture: true));
             state.keydownListener = null;
         }
         if (state.keyupListener != null) {
-            web.document.removeEventListener('keyup', state.keyupListener!, true.toJS);
+            web.document.removeEventListener('keyup', state.keyupListener!, web.EventListenerOptions(capture: true));
             state.keyupListener = null;
         }
 
@@ -799,9 +799,10 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
         state.keydownListener = keydownListener;
         state.keyupListener = keyupListener;
 
-        // Use capture phase (true) to intercept before Flutter's event handling
-        web.document.addEventListener('keydown', keydownListener, true.toJS);
-        web.document.addEventListener('keyup', keyupListener, true.toJS);
+        // Use capture phase to intercept before Flutter's event handling
+        final captureOptions = web.AddEventListenerOptions(capture: true);
+        web.document.addEventListener('keydown', keydownListener, captureOptions);
+        web.document.addEventListener('keyup', keyupListener, captureOptions);
     }
 
     /// Connects to the native uvc_button_helper WebSocket server on localhost.
@@ -882,11 +883,11 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
 
         // Remove keyboard fallback listeners
         if (state.keydownListener != null) {
-            web.document.removeEventListener('keydown', state.keydownListener!, true.toJS);
+            web.document.removeEventListener('keydown', state.keydownListener!, web.EventListenerOptions(capture: true));
             state.keydownListener = null;
         }
         if (state.keyupListener != null) {
-            web.document.removeEventListener('keyup', state.keyupListener!, true.toJS);
+            web.document.removeEventListener('keyup', state.keyupListener!, web.EventListenerOptions(capture: true));
             state.keyupListener = null;
         }
 
@@ -1059,19 +1060,21 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
             web.MediaRecorderOptions(mimeType: mimeType),
         );
 
-        recorder.ondataavailable = ((web.Event e) {
-            final blob = (e as web.BlobEvent).data;
+        recorder.addEventListener('dataavailable', ((web.BlobEvent e) {
+            final blob = e.data;
             if (blob.size > 0) state.recordingChunks.add(blob);
-        }).toJS;
+        }).toJS);
 
-        recorder.onstop = ((web.Event _) {
-            final parts = state.recordingChunks.toJS as JSArray<JSAny>;
-            final blob = web.Blob(parts, web.BlobPropertyBag(type: mimeType));
+        recorder.addEventListener('stop', ((web.Event _) {
+            final blob = web.Blob(
+                state.recordingChunks.map((c) => c as JSAny).toList().toJS,
+                web.BlobPropertyBag(type: mimeType),
+            );
             final url = web.URL.createObjectURL(blob);
             completer.complete(
                 XFile(url, mimeType: mimeType, name: 'recording.webm'),
             );
-        }).toJS;
+        }).toJS);
 
         state.mediaRecorder = recorder;
         recorder.start(1000); // collect chunks every second

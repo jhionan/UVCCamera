@@ -238,9 +238,14 @@ func (cm *CameraManager) Stop() {
 	// Release lock so readFrames can finish its current iteration
 	cm.mu.Unlock()
 
-	// Wait for frame reader to actually exit (max 2 seconds)
+	// Wait for frame reader to exit with a timeout
 	if frameExit != nil {
-		<-frameExit
+		select {
+		case <-frameExit:
+			// Frame reader exited cleanly
+		case <-time.After(2 * time.Second):
+			log.Printf("  Warning: frame reader did not exit within 2s, proceeding with stop")
+		}
 	}
 
 	cm.mu.Lock()
@@ -732,5 +737,13 @@ func main() {
 	<-sigCh
 
 	log.Println("Shutting down...")
+
+	// Force exit on second signal (in case Stop() blocks on a C call)
+	go func() {
+		<-sigCh
+		log.Println("Force exit")
+		os.Exit(1)
+	}()
+
 	httpServer.Close()
 }
