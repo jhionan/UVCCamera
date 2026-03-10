@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cross_file/cross_file.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uvccamera/uvccamera.dart';
@@ -97,35 +98,8 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
           _hasCameraPermission = true;
           _hasDevicePermission = true;
           _isDeviceAttached = true;
-          _isDeviceConnected = true;
 
-          _log = '';
-
-          _cameraController = UvcCameraController(device: widget.device);
-          _cameraControllerInitializeFuture = _cameraController!.initialize().then((_) async {
-            _errorEventSubscription = _cameraController!.cameraErrorEvents.listen((event) {
-              setState(() {
-                _log = 'error: ${event.error}\n$_log';
-              });
-
-              if (event.error.type == UvcCameraErrorType.previewInterrupted) {
-                _detach();
-                _attach();
-              }
-            });
-
-            _statusEventSubscription = _cameraController!.cameraStatusEvents.listen((event) {
-              setState(() {
-                _log = 'status: ${event.payload}\n$_log';
-              });
-            });
-
-            _buttonEventSubscription = _cameraController!.cameraButtonEvents.listen((event) {
-              setState(() {
-                _log = 'btn(${event.button}): ${event.state}\n$_log';
-              });
-            });
-          });
+          _connectCamera();
         } else if (event.type == UvcCameraDeviceEventType.disconnected) {
           _hasCameraPermission = false;
           _hasDevicePermission = false;
@@ -193,12 +167,49 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
       return;
     }
 
-    _requestDevicePermission().then((value) {
-      setState(() {
-        _hasDevicePermission = value;
+    final hasDevicePermission = await _requestDevicePermission();
+    setState(() {
+      _hasDevicePermission = hasDevicePermission;
+    });
+
+    // On web, there are no connected/disconnected events — once permissions are
+    // granted the camera is ready to use, so initialize the controller directly.
+    if (kIsWeb && hasDevicePermission) {
+      _connectCamera();
+    }
+  }
+
+  void _connectCamera() {
+    setState(() {
+      _isDeviceConnected = true;
+    });
+
+    _log = '';
+
+    _cameraController = UvcCameraController(device: widget.device);
+    _cameraControllerInitializeFuture = _cameraController!.initialize().then((_) async {
+      _errorEventSubscription = _cameraController!.cameraErrorEvents.listen((event) {
+        setState(() {
+          _log = 'error: ${event.error}\n$_log';
+        });
+
+        if (event.error.type == UvcCameraErrorType.previewInterrupted) {
+          _detach();
+          _attach();
+        }
       });
 
-      return value;
+      _statusEventSubscription = _cameraController!.cameraStatusEvents.listen((event) {
+        setState(() {
+          _log = 'status: ${event.payload}\n$_log';
+        });
+      });
+
+      _buttonEventSubscription = _cameraController!.cameraButtonEvents.listen((event) {
+        setState(() {
+          _log = 'btn(${event.button}): ${event.state}\n$_log';
+        });
+      });
     });
   }
 
@@ -208,6 +219,10 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
   }
 
   Future<bool> _requestCameraPermission() async {
+    // permission_handler is not available on web — camera permission is
+    // handled by the browser when getUserMedia is called.
+    if (kIsWeb) return true;
+
     var cameraPermissionStatus = await Permission.camera.status;
     if (cameraPermissionStatus.isGranted) {
       return true;

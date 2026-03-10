@@ -210,25 +210,36 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
             return false;
         }
 
-        // Also request WebHID permission for button events — requires a user gesture,
-        // which is satisfied here because requestDevicePermission is called from a tap.
-        final hid = WebHID.instance;
-        if (hid != null) {
-            try {
-                final hidDevices = await hid.requestDevice(
-                    RequestOptions(
-                        filters: [DeviceFilter(usagePage: 0x0090)],
-                    ),
-                );
-                if (hidDevices.isNotEmpty) {
-                    _hidDevicesForDeviceName[device.name] = hidDevices;
-                }
-            } catch (_) {
-                // User denied or no matching HID device — buttons won't work this session
-            }
-        }
+        // WebHID permission for button events is NOT requested here because it
+        // shows a blocking browser dialog even when no HID devices are available.
+        // Instead, HID is requested lazily via requestHidPermission() which
+        // should be called from a user gesture when button events are needed.
 
         return true;
+    }
+
+    /// Requests WebHID permission for camera button events.
+    ///
+    /// Must be called from a user gesture context (e.g. button tap).
+    /// Returns `true` if at least one HID device with camera controls was granted.
+    Future<bool> requestHidPermission(UvcCameraDevice device) async {
+        final hid = WebHID.instance;
+        if (hid == null) return false;
+
+        try {
+            final hidDevices = await hid.requestDevice(
+                RequestOptions(
+                    filters: [DeviceFilter(usagePage: 0x0090)],
+                ),
+            );
+            if (hidDevices.isNotEmpty) {
+                _hidDevicesForDeviceName[device.name] = hidDevices;
+                return true;
+            }
+        } catch (_) {
+            // User denied or no matching HID device
+        }
+        return false;
     }
 
     @override
@@ -548,30 +559,21 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
         final video = state?.videoElement;
         if (video == null) throw Exception('Camera $cameraId is not open');
 
+        final vw = video.videoWidth;
+        final vh = video.videoHeight;
+        if (vw == 0 || vh == 0) {
+            throw Exception('Video has no dimensions ($vw x $vh) — not ready');
+        }
+
         final canvas = web.HTMLCanvasElement()
-            ..width = video.videoWidth
-            ..height = video.videoHeight;
+            ..width = vw
+            ..height = vh;
 
         final ctx = canvas.getContext('2d') as web.CanvasRenderingContext2D;
         ctx.drawImage(video, 0, 0);
 
-        final completer = Completer<XFile>();
-        canvas.toBlob(
-            ((web.Blob? blob) {
-                if (blob == null) {
-                    completer.completeError(Exception('Failed to capture image'));
-                    return;
-                }
-                final url = web.URL.createObjectURL(blob);
-                completer.complete(
-                    XFile(url, mimeType: 'image/jpeg', name: 'picture.jpg'),
-                );
-            }).toJS,
-            'image/jpeg',
-            (0.95).toJS,
-        );
-
-        return completer.future;
+        final dataUrl = canvas.toDataURL('image/jpeg', (0.95).toJS);
+        return XFile(dataUrl, mimeType: 'image/jpeg', name: 'picture.jpg');
     }
 
     @override
