@@ -265,7 +265,11 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
             ..autoplay = true
             ..muted = true
             ..playsInline = true;
+        videoElement.style.width = '100%';
+        videoElement.style.height = '100%';
+        videoElement.style.objectFit = 'cover';
         videoElement.srcObject = stream;
+        await videoElement.play().toDart;
 
         final cameraId = _nextCameraId++;
         ui_web.platformViewRegistry.registerViewFactory(
