@@ -1,10 +1,14 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cross_file/cross_file.dart';
 
 import 'uvccamera_device.dart';
 import 'uvccamera_mode.dart';
 
+part 'uvccamera_controller_state.g.dart';
+
 /// The state of a [UvcCameraController].
+@CopyWith(copyWithNull: true)
 @immutable
 class UvcCameraControllerState {
   /// True after [UvcCameraController.initialize] has completed successfully.
@@ -52,29 +56,6 @@ class UvcCameraControllerState {
         videoRecordingFile: null,
         isTakingPicture: false,
       );
-
-  /// Creates a modified copy of this object.
-  ///
-  /// Explicitly specified fields get the specified value, all other fields get the same value of the current object.
-  UvcCameraControllerState copyWith({
-    bool? isInitialized,
-    UvcCameraDevice? device,
-    UvcCameraMode? previewMode,
-    bool? isRecordingVideo,
-    UvcCameraMode? videoRecordingMode,
-    XFile? videoRecordingFile,
-    bool? isTakingPicture,
-  }) {
-    return UvcCameraControllerState(
-      isInitialized: isInitialized ?? this.isInitialized,
-      device: device ?? this.device,
-      previewMode: previewMode ?? this.previewMode,
-      isRecordingVideo: isRecordingVideo ?? this.isRecordingVideo,
-      videoRecordingMode: videoRecordingMode ?? this.videoRecordingMode,
-      videoRecordingFile: videoRecordingFile ?? this.videoRecordingFile,
-      isTakingPicture: isTakingPicture ?? this.isTakingPicture,
-    );
-  }
 
   @override
   String toString() {

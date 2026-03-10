@@ -7,7 +7,7 @@ export 'src/uvccamera_controller_disposed_exception.dart' show UvcCameraControll
 export 'src/uvccamera_controller_illegal_state_exception.dart' show UvcCameraControllerIllegalStateException;
 export 'src/uvccamera_controller_initialized_exception.dart' show UvcCameraControllerInitializedException;
 export 'src/uvccamera_controller_not_initialized_exception.dart' show UvcCameraControllerNotInitializedException;
-export 'src/uvccamera_controller_state.dart' show UvcCameraControllerState;
+export 'src/uvccamera_controller_state.dart' show UvcCameraControllerState, $UvcCameraControllerStateCopyWith;
 export 'src/uvccamera_device.dart' show UvcCameraDevice;
 export 'src/uvccamera_device_event.dart' show UvcCameraDeviceEvent;
 export 'src/uvccamera_device_event_type.dart' show UvcCameraDeviceEventType;
