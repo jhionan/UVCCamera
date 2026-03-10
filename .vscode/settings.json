@@ -18,5 +18,10 @@
         "titleBar.inactiveBackground": "#bcf73999",
         "titleBar.inactiveForeground": "#15202b99"
     },
-    "peacock.color": "#bcf739"
+    "peacock.color": "#bcf739",
+    "gopls": {
+        "build.directoryFilters": [
+            "-flutter/tools/uvc_button_helper"
+        ]
+    }
 }
