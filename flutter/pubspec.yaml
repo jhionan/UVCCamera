@@ -6,6 +6,7 @@ issue_tracker: https://github.com/alexey-pelykh/UVCCamera/issues
 homepage: https://uvccamera.org
 platforms:
   android:
+  web:
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -17,6 +18,8 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   cross_file: ^0.3.4+2
   equatable: ^2.0.7
+  web: ^1.1.0
+  flutter_webhid: ^0.2.0
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +32,6 @@ flutter:
       android:
         package: org.uvccamera.flutter
         pluginClass: UvcCameraPlugin
+      web:
+        pluginClass: UvcCameraWebPlatform
+        fileName: src/uvccamera_web_platform.dart

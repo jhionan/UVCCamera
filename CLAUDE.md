@@ -2,6 +2,16 @@
 
 > USB Video Class (UVC) camera library for Android + Flutter plugin
 
+## Fork Context
+
+This is a **personal/private fork** of `alexey-pelykh/UVCCamera` (which is itself a hard fork of `saki4510t/UVCCamera`).
+
+- **Upstream**: `alexey-pelykh/UVCCamera` — follow for upstream bug fixes and cherry-picks
+- **CI/CD**: Not configured for this fork — no automated builds, no publish pipelines
+- **Distribution**: Not published — no Maven Central, pub.dev, or GitHub Packages releases
+- **Purpose**: Local development and custom feature additions (e.g., Flutter web support)
+- Upstream submodules in `upstreams/` for reference. Community improvements are cherry-picked with attribution trailers.
+
 ## Project Context
 
 | Attribute | Value |
@@ -12,8 +22,8 @@
 | **Java Compatibility** | 11 (build requires JDK 17) |
 | **Target ABIs** | armeabi-v7a, arm64-v8a |
 | **Gradle** | 8.13, Kotlin DSL, version catalog |
-| **Flutter** | >=3.29.2, Dart SDK >=3.7.0 |
-| **Distribution** | Maven Central (`org.uvccamera:lib`), pub.dev (`uvccamera`), GitHub Packages |
+| **Flutter** | >=3.24.0, Dart SDK >=3.5.0 |
+| **Platforms** | Android (production), Web (in development) |
 
 ## Structure
 
@@ -24,6 +34,8 @@
 | `lib/src/main/jni/` | Native C/C++ (libuvc, libusb, libjpeg, UVCCamera JNI) |
 | `flutter/` | Flutter plugin (`uvccamera`) |
 | `flutter/lib/` | Dart API |
+| `flutter/lib/src/` | Platform interface + all data models, events, exceptions |
+| `flutter/lib/src/uvccamera_web_platform.dart` | Flutter Web platform implementation (Dart, via `package:web` + `flutter_webhid`) |
 | `flutter/android/` | Flutter Android platform implementation (Java) |
 | `flutter/example/` | Flutter example app |
 | `usbCameraCommon/` | Shared Android UI utilities for test apps |
@@ -31,6 +43,33 @@
 | `upstreams/` | Git submodules referencing upstream forks |
 | `gh-pages/` | GitHub Pages build assets |
 | `gradle/libs.versions.toml` | Dependency version catalog |
+
+## Flutter Plugin Architecture
+
+The plugin uses the **platform interface pattern** (`plugin_platform_interface`):
+
+- `UvcCameraPlatformInterface` — abstract base defining all 16 methods + device event stream
+- `UvcCameraPlatform` — Android implementation (MethodChannel + EventChannels)
+- Web implementation to be added as `UvcCameraWebPlatform` in `flutter/lib/src/uvccamera_web_platform.dart`
+
+Key Dart classes:
+- `UvcCameraController` — `ValueNotifier`-based controller; manages init, capture, recording, preview
+- `UvcCameraDevice` — immutable device descriptor (name, vendorId, productId, class, subclass)
+- `UvcCameraPreview` — `StatelessWidget` wrapping `Texture` (Android) or `HtmlElementView` (web)
+- Method channel: `uvccamera/native`
+- Event channels: `uvccamera/device_events`, `uvccamera/camera@{id}/error_events`, etc.
+
+## Web Support Plan
+
+UVC cameras appear as standard `videoinput` devices in the browser's `MediaDevices` API — no special handling needed. The approach:
+
+- **Library**: `flutter_webrtc` (pub.dev) — provides `Helper.cameras` enumeration, `deviceId`-based selection, `getUserMedia` with full constraints, and `RTCVideoRenderer` widget. Falls back to `package:web` for `MediaRecorder`.
+- **Preview**: `RTCVideoRenderer` + `HtmlElementView`
+- **Still capture**: `ImageCapture` API or canvas snapshot
+- **Video recording**: `MediaRecorder` API (outputs webm/mp4)
+- **Camera buttons**: UVC hardware buttons are not accessible via browser APIs — web will skip button events
+- **Status/error events**: Mapped to stream-equivalent browser events
+- **Constraints**: Requires HTTPS (or localhost). No UVC protocol-level control (no raw UVC commands via browser).
 
 ## Conventions
 
@@ -47,7 +86,7 @@ Format: `(type) scope: description`
 
 Scope prefix when targeting a specific module: `flutter:`, `ci:`, `lib:`
 
-Cherry-picked commits use trailers:
+Cherry-picked commits from upstream use trailers:
 ```
 Cherry-picked-from: source/repo@sha (or source/repo#PR)
 Co-authored-by: Original Author <email>
@@ -87,38 +126,37 @@ Per `.editorconfig`: 4-space indent, 120 char max, LF line endings, UTF-8. YAML 
 ./gradlew :lib:publishToMavenLocal
 ```
 
-### Build Flutter example
+### Build Flutter example (Android)
 
 ```shell
 cd flutter/example
 flutter build apk
 ```
 
-### Run full build chain
+### Run Flutter example (Web)
+
+```shell
+cd flutter/example
+flutter run -d chrome
+```
+
+### Run full build chain (Android)
 
 ```shell
 ./gradlew assembleRelease publishToMavenLocal && cd flutter/example && flutter build apk
 ```
 
-## Release
+## CI / Release
 
-Tag-triggered: push a semantic version tag to trigger the release workflow.
+CI and release pipelines are **not configured** for this fork.
 
-```shell
-git tag X.Y.Z
-git push origin X.Y.Z
-```
+To build manually:
+- Android library: `./gradlew :lib:assembleRelease`
+- Flutter plugin: `cd flutter && flutter build`
 
-The CI workflow automatically publishes to Maven Central, pub.dev, and GitHub Packages.
-
-## CI
-
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci.yaml` | Push to main, PRs to main | Build lib, publish snapshots, build GitHub Pages |
-| `release.yaml` | Version tag push | Full release: build, sign, publish all artifacts |
-
-Snapshot versions: `main-SNAPSHOT` (main branch), `PR-{N}-SNAPSHOT` (pull requests).
+If you want to set up CI in the future, refer to the upstream `.github/workflows/` as a reference:
+- `ci.yaml` — Build lib, publish snapshots
+- `release.yaml` — Full release: build, sign, publish to Maven Central + pub.dev
 
 ## Native Layer
 
@@ -131,7 +169,3 @@ Key native libraries:
 - **UVCCamera** — JNI bridge and pipeline system
 
 The pipeline architecture (`lib/src/main/jni/UVCCamera/pipeline/`) handles frame processing with buffered, preview, capture, and callback pipelines.
-
-## Fork Context
-
-Hard fork of `saki4510t/UVCCamera`. Upstream submodules in `upstreams/` for reference. Community improvements are cherry-picked with attribution trailers.

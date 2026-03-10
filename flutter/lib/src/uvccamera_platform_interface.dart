@@ -1,5 +1,6 @@
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:flutter/widgets.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'uvccamera_button_event.dart';
 import 'uvccamera_device.dart';
@@ -47,6 +48,15 @@ abstract class UvcCameraPlatformInterface extends PlatformInterface {
     throw UnimplementedError('getCameraTextureId() has not been implemented.');
   }
 
+  /// Builds a widget showing the live camera preview for [cameraId].
+  ///
+  /// [textureId] is the Flutter texture ID returned by [getCameraTextureId];
+  /// platform implementations that do not use Flutter textures (e.g., web)
+  /// may ignore it and render via a platform view instead.
+  Widget buildCameraPreview(int cameraId, int textureId) {
+    return Texture(textureId: textureId);
+  }
+
   Future<Stream<UvcCameraErrorEvent>> attachToCameraErrorCallback(int cameraId) {
     throw UnimplementedError('attachToCameraErrorCallback() has not been implemented.');
   }
@@ -87,11 +97,11 @@ abstract class UvcCameraPlatformInterface extends PlatformInterface {
     throw UnimplementedError('takePicture() has not been implemented.');
   }
 
-  Future<XFile> startVideoRecording(int cameraId, UvcCameraMode videoRecordingMode) {
+  Future<void> startVideoRecording(int cameraId, UvcCameraMode videoRecordingMode) {
     throw UnimplementedError('startVideoRecording() has not been implemented.');
   }
 
-  Future<void> stopVideoRecording(int cameraId) {
+  Future<XFile> stopVideoRecording(int cameraId) {
     throw UnimplementedError('stopVideoRecording() has not been implemented.');
   }
 

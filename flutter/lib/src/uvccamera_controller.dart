@@ -179,20 +179,16 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
       throw UvcCameraControllerIllegalStateException('UvcCameraController is already recording video');
     }
 
-    value = value.copyWith(isRecordingVideo: true, videoRecordingMode: videoRecordingMode, videoRecordingFile: null);
+    value = value.copyWith(isRecordingVideo: true, videoRecordingMode: videoRecordingMode);
     try {
-      final XFile videoRecordingFile = await UvcCameraPlatformInterface.instance.startVideoRecording(
-        _cameraId!,
-        videoRecordingMode,
-      );
-      value = value.copyWith(videoRecordingFile: videoRecordingFile);
+      await UvcCameraPlatformInterface.instance.startVideoRecording(_cameraId!, videoRecordingMode);
     } catch (e) {
-      value = value.copyWith(isRecordingVideo: false, videoRecordingMode: null, videoRecordingFile: null);
+      value = value.copyWith(isRecordingVideo: false, videoRecordingMode: null);
       rethrow;
     }
   }
 
-  /// Stops video recording.
+  /// Stops video recording and returns the recorded file.
   Future<XFile> stopVideoRecording() async {
     _ensureInitializedNotDisposed();
 
@@ -201,15 +197,9 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
     }
 
     try {
-      await UvcCameraPlatformInterface.instance.stopVideoRecording(_cameraId!);
-
-      final XFile videoRecordingFile = value.videoRecordingFile!;
-
-      return videoRecordingFile;
-    } catch (e) {
-      rethrow;
+      return await UvcCameraPlatformInterface.instance.stopVideoRecording(_cameraId!);
     } finally {
-      value = value.copyWith(isRecordingVideo: false, videoRecordingMode: null, videoRecordingFile: null);
+      value = value.copyWith(isRecordingVideo: false, videoRecordingMode: null);
     }
   }
 
@@ -217,7 +207,7 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
   Widget buildPreview() {
     _ensureInitializedNotDisposed();
 
-    return Texture(textureId: _textureId!);
+    return UvcCameraPlatformInterface.instance.buildCameraPreview(_cameraId!, _textureId!);
   }
 
   /// Ensures that the controller is initialized and not disposed.

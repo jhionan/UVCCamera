@@ -25,6 +25,8 @@ class UvcCameraPlatform extends UvcCameraPlatformInterface {
   final Map<int, EventChannel> _buttonEventChannels = {};
   final Map<int, Stream<UvcCameraButtonEvent>> _buttonEventStreams = {};
 
+  final Map<int, XFile> _recordingFiles = {};
+
   @override
   Future<bool> isSupported() async {
     final result = await _nativeMethodChannel.invokeMethod<bool>('isSupported');
@@ -199,7 +201,7 @@ class UvcCameraPlatform extends UvcCameraPlatformInterface {
   }
 
   @override
-  Future<XFile> startVideoRecording(int cameraId, UvcCameraMode videoRecordingMode) async {
+  Future<void> startVideoRecording(int cameraId, UvcCameraMode videoRecordingMode) async {
     final result = await _nativeMethodChannel.invokeMethod<String>('startVideoRecording', {
       'cameraId': cameraId,
       'videoRecordingMode': videoRecordingMode.toMap(),
@@ -209,12 +211,18 @@ class UvcCameraPlatform extends UvcCameraPlatformInterface {
       throw PlatformException(code: 'UNKNOWN', message: 'Unable to start video recording for camera: $cameraId');
     }
 
-    return XFile(result);
+    _recordingFiles[cameraId] = XFile(result);
   }
 
   @override
-  Future<void> stopVideoRecording(int cameraId) async {
+  Future<XFile> stopVideoRecording(int cameraId) async {
     await _nativeMethodChannel.invokeMethod<void>('stopVideoRecording', {'cameraId': cameraId});
+
+    final file = _recordingFiles.remove(cameraId);
+    if (file == null) {
+      throw PlatformException(code: 'UNKNOWN', message: 'No recording file found for camera: $cameraId');
+    }
+    return file;
   }
 
   @override
