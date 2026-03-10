@@ -294,21 +294,36 @@ class UvcCameraWebPlatform extends UvcCameraPlatformInterface {
 
     /// Check if the native helper is running on any of the candidate ports.
     /// Returns the port number if found, or null.
+    /// Probes all ports in parallel with a short timeout so browser-mode
+    /// startup isn't delayed when no helper is running.
     Future<int?> _detectHelper() async {
         const ports = [8765, 8766, 8767];
-        for (final port in ports) {
+        final futures = ports.map((port) async {
             try {
+                final controller = web.AbortController();
+                final timer = Future.delayed(const Duration(milliseconds: 500), () {
+                    controller.abort();
+                });
                 final response = await web.window
-                    .fetch('http://localhost:$port/devices'.toJS)
+                    .fetch(
+                        'http://localhost:$port/devices'.toJS,
+                        web.RequestInit(signal: controller.signal),
+                    )
                     .toDart;
-                if (!response.ok) continue;
-                // Verify this is actually our helper by checking the response format
+                timer.ignore();
+                if (!response.ok) return null;
                 final body = (await response.text().toDart).toDart;
                 final data = jsonDecode(body) as Map<String, dynamic>;
                 if (data['type'] == 'hello' && data['devices'] is List) {
                     return port;
                 }
             } catch (_) {}
+            return null;
+        });
+        final results = await Future.wait(futures);
+        // Return first successful port
+        for (final port in results) {
+            if (port != null) return port;
         }
         return null;
     }
