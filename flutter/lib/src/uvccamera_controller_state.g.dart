@@ -22,12 +22,13 @@ abstract class _$UvcCameraControllerStateCWProxy {
 
   UvcCameraControllerState isTakingPicture(bool isTakingPicture);
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `UvcCameraControllerState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// Creates a new instance with the provided field values.
+  /// Passing `null` to a nullable field nullifies it, while `null` for a non-nullable field is ignored. To update a single field use `UvcCameraControllerState(...).copyWith.fieldName(value)`.
   ///
-  /// Usage
+  /// Example:
   /// ```dart
   /// UvcCameraControllerState(...).copyWith(id: 12, name: "My name")
-  /// ````
+  /// ```
   UvcCameraControllerState call({
     bool isInitialized,
     UvcCameraDevice device,
@@ -39,7 +40,8 @@ abstract class _$UvcCameraControllerStateCWProxy {
   });
 }
 
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfUvcCameraControllerState.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfUvcCameraControllerState.copyWith.fieldName(...)`
+/// Callable proxy for `copyWith` functionality.
+/// Use as `instanceOfUvcCameraControllerState.copyWith(...)` or call `instanceOfUvcCameraControllerState.copyWith.fieldName(value)` for a single field.
 class _$UvcCameraControllerStateCWProxyImpl
     implements _$UvcCameraControllerStateCWProxy {
   const _$UvcCameraControllerStateCWProxyImpl(this._value);
@@ -48,41 +50,42 @@ class _$UvcCameraControllerStateCWProxyImpl
 
   @override
   UvcCameraControllerState isInitialized(bool isInitialized) =>
-      this(isInitialized: isInitialized);
+      call(isInitialized: isInitialized);
 
   @override
   UvcCameraControllerState device(UvcCameraDevice device) =>
-      this(device: device);
+      call(device: device);
 
   @override
   UvcCameraControllerState previewMode(UvcCameraMode? previewMode) =>
-      this(previewMode: previewMode);
+      call(previewMode: previewMode);
 
   @override
   UvcCameraControllerState isRecordingVideo(bool isRecordingVideo) =>
-      this(isRecordingVideo: isRecordingVideo);
+      call(isRecordingVideo: isRecordingVideo);
 
   @override
   UvcCameraControllerState videoRecordingMode(
           UvcCameraMode? videoRecordingMode) =>
-      this(videoRecordingMode: videoRecordingMode);
+      call(videoRecordingMode: videoRecordingMode);
 
   @override
   UvcCameraControllerState videoRecordingFile(XFile? videoRecordingFile) =>
-      this(videoRecordingFile: videoRecordingFile);
+      call(videoRecordingFile: videoRecordingFile);
 
   @override
   UvcCameraControllerState isTakingPicture(bool isTakingPicture) =>
-      this(isTakingPicture: isTakingPicture);
+      call(isTakingPicture: isTakingPicture);
 
   @override
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `UvcCameraControllerState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// Creates a new instance with the provided field values.
+  /// Passing `null` to a nullable field nullifies it, while `null` for a non-nullable field is ignored. To update a single field use `UvcCameraControllerState(...).copyWith.fieldName(value)`.
   ///
-  /// Usage
+  /// Example:
   /// ```dart
   /// UvcCameraControllerState(...).copyWith(id: 12, name: "My name")
-  /// ````
+  /// ```
   UvcCameraControllerState call({
     Object? isInitialized = const $CopyWithPlaceholder(),
     Object? device = const $CopyWithPlaceholder(),
@@ -93,11 +96,12 @@ class _$UvcCameraControllerStateCWProxyImpl
     Object? isTakingPicture = const $CopyWithPlaceholder(),
   }) {
     return UvcCameraControllerState(
-      isInitialized: isInitialized == const $CopyWithPlaceholder()
-          ? _value.isInitialized
-          // ignore: cast_nullable_to_non_nullable
-          : isInitialized as bool,
-      device: device == const $CopyWithPlaceholder()
+      isInitialized:
+          isInitialized == const $CopyWithPlaceholder() || isInitialized == null
+              ? _value.isInitialized
+              // ignore: cast_nullable_to_non_nullable
+              : isInitialized as bool,
+      device: device == const $CopyWithPlaceholder() || device == null
           ? _value.device
           // ignore: cast_nullable_to_non_nullable
           : device as UvcCameraDevice,
@@ -105,7 +109,8 @@ class _$UvcCameraControllerStateCWProxyImpl
           ? _value.previewMode
           // ignore: cast_nullable_to_non_nullable
           : previewMode as UvcCameraMode?,
-      isRecordingVideo: isRecordingVideo == const $CopyWithPlaceholder()
+      isRecordingVideo: isRecordingVideo == const $CopyWithPlaceholder() ||
+              isRecordingVideo == null
           ? _value.isRecordingVideo
           // ignore: cast_nullable_to_non_nullable
           : isRecordingVideo as bool,
@@ -117,7 +122,8 @@ class _$UvcCameraControllerStateCWProxyImpl
           ? _value.videoRecordingFile
           // ignore: cast_nullable_to_non_nullable
           : videoRecordingFile as XFile?,
-      isTakingPicture: isTakingPicture == const $CopyWithPlaceholder()
+      isTakingPicture: isTakingPicture == const $CopyWithPlaceholder() ||
+              isTakingPicture == null
           ? _value.isTakingPicture
           // ignore: cast_nullable_to_non_nullable
           : isTakingPicture as bool,
@@ -126,17 +132,19 @@ class _$UvcCameraControllerStateCWProxyImpl
 }
 
 extension $UvcCameraControllerStateCopyWith on UvcCameraControllerState {
-  /// Returns a callable class that can be used as follows: `instanceOfUvcCameraControllerState.copyWith(...)` or like so:`instanceOfUvcCameraControllerState.copyWith.fieldName(...)`.
+  /// Returns a callable class used to build a new instance with modified fields.
+  /// Example: `instanceOfUvcCameraControllerState.copyWith(...)` or `instanceOfUvcCameraControllerState.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
   _$UvcCameraControllerStateCWProxy get copyWith =>
       _$UvcCameraControllerStateCWProxyImpl(this);
 
-  /// Copies the object with the specific fields set to `null`. If you pass `false` as a parameter, nothing will be done and it will be ignored. Don't do it. Prefer `copyWith(field: null)` or `UvcCameraControllerState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// Returns a copy of the object with the selected fields set to `null`.
+  /// A flag set to `false` leaves the field unchanged. Prefer `copyWith(field: null)` or `copyWith.fieldName(null)` for single-field updates.
   ///
-  /// Usage
+  /// Example:
   /// ```dart
   /// UvcCameraControllerState(...).copyWithNull(firstField: true, secondField: true)
-  /// ````
+  /// ```
   UvcCameraControllerState copyWithNull({
     bool previewMode = false,
     bool videoRecordingMode = false,
